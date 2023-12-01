@@ -1,16 +1,30 @@
-# This is a sample Python script.
+import tkinter as tk
 
-# Press ⌃R to execute it or replace it with your code.
-# Press Double ⇧ to search everywhere for classes, files, tool windows, actions, and settings.
+# Create the main window
+root = tk.Tk()
+root.title("Drone Network Layout")
 
+# Set the size of the window
+root.geometry("1200x800")
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press ⌘F8 to toggle the breakpoint.
+# Create a frame for the map placeholder
+map_frame = tk.Frame(root, bg='lightgrey', width=800, height=600)
+map_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+map_frame.pack_propagate(False)  # Prevents the frame from resizing to fit its contents
 
+# Place a placeholder label where the map would go
+map_placeholder = tk.Label(map_frame, text="Map Placeholder", bg='lightgrey')
+map_placeholder.pack(expand=True)
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+# Create a frame for the list placeholder
+list_frame = tk.Frame(root, bg='white', width=400, height=800)
+list_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
+list_frame.pack_propagate(False)  # Prevents the frame from resizing to fit its contents
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+# Place a placeholder label where the list would go
+list_placeholder = tk.Label(list_frame, text="List Placeholder", bg='white')
+list_placeholder.pack(expand=True)
+
+# Run the application
+root.mainloop()
+
