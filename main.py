@@ -5,6 +5,7 @@ import tkintermapview
 map_widget_width = 1000
 map_widget_height = 900
 
+
 # Create the main window
 root = tk.Tk()
 root.title("Drone Control Network")
