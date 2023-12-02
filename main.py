@@ -1,3 +1,4 @@
+import math
 import tkinter as tk
 import tkintermapview
 from PIL import Image, ImageTk
@@ -11,10 +12,32 @@ class Drone:
         self.x_long = x_long
         self.y_lat = y_lat
 
-    def place_on_map(self, map_widget, plane_image):
+    def place_on_map(self, map_widget, plane_image, area_size):
         # Create a marker for the drone with its ID as text
-        map_widget.set_marker(self.x_long, self.y_lat, icon=plane_image, text=str(self.id))
+        marker = map_widget.set_marker(self.x_long, self.y_lat, icon=plane_image, text=str(self.id))
 
+        # Constants for converting meters to degrees
+        meters_in_latitude_degree = 111320  # Approximately true for all latitudes
+        meters_in_longitude_degree_at_equator = 111320  # Approximately true at the equator
+
+        # Adjust the longitude degree size based on latitude
+        meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(self.y_lat))
+
+        # Calculate half the size of the square in degrees
+        half_square_size_lat = (area_size ) / meters_in_latitude_degree
+        half_square_size_long = (area_size / 2) / meters_in_longitude_degree
+
+        # Calculate corner coordinates of the square
+        top_left = (self.x_long - half_square_size_long, self.y_lat + half_square_size_lat)
+        top_right = (self.x_long + half_square_size_long, self.y_lat + half_square_size_lat)
+        bottom_left = (self.x_long - half_square_size_long, self.y_lat - half_square_size_lat)
+        bottom_right = (self.x_long + half_square_size_long, self.y_lat - half_square_size_lat)
+
+        # Define the polygon points (corners of the square)
+        polygon_points = [top_left, top_right, bottom_right, bottom_left, top_left]
+
+        # Draw the polygon on the map
+        map_widget.set_polygon(polygon_points, fill_color=None, outline_color="red", border_width=2)
 
 # Initialize variables to store the selected location's longitude and latitude
 target_longitude = 52.516268
@@ -41,9 +64,39 @@ def set_target_marker():
 
 
 def calculate_clicked():
-    if drones:
-        first_drone = drones[0]
-        first_drone.place_on_map(map_widget, plane_image)
+    global drones
+    num_drones = len(drones)
+    if num_drones == 0:
+        return  # No drones to place
+
+    # Calculate the number of drones per row (and column)
+    drones_per_row = math.ceil(math.sqrt(num_drones))
+
+    # Constants for converting meters to degrees
+    meters_in_latitude_degree = 111320  # Approximately true for all latitudes
+    meters_in_longitude_degree_at_equator = 111320  # Approximately true at the equator
+
+    # Adjust the longitude degree size based on latitude
+    meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(target_latitude))
+
+    # Calculate the degree size for each drone area
+    drone_lat_deg = drone_area_size / meters_in_latitude_degree
+    drone_long_deg = drone_area_size / meters_in_longitude_degree
+
+    # Calculate the top-left start position for the grid
+    start_lat = target_latitude + (drone_lat_deg * drones_per_row) / 2
+    start_long = target_longitude - (drone_long_deg * drones_per_row) / 2
+
+    # Assign positions to each drone
+    for i, drone in enumerate(drones):
+        row = i // drones_per_row
+        col = i % drones_per_row
+        drone.x_long = start_long + col * drone_long_deg
+        drone.y_lat = start_lat - row * drone_lat_deg
+
+        # Place the drone on the map
+        drone.place_on_map(map_widget, plane_image,drone_area_size)
+
 
 
 def set_target(coords):
@@ -62,6 +115,12 @@ def update_target():
     entry_target_y.delete(0, tk.END)  # Clear the current value
     entry_target_y.insert(0, str(target_longitude))  # Insert the new value
     set_target_marker()
+    entry_target_size = display_controls_frame.nametowidget("drone_size")
+    entry_target_size.delete(0, tk.END)  # Clear the current value
+    entry_target_size.insert(0, str(drone_area_size))  # Insert the new value
+    entry_target_overlap = display_controls_frame.nametowidget("drone_overlap")
+    entry_target_overlap.delete(0, tk.END)  # Clear the current value
+    entry_target_overlap.insert(0, str(drone_area_overlap))  # Insert the new value
 
 
 # Functions for updating the drone list in the Listbox
