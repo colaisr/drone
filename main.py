@@ -1,5 +1,8 @@
 import tkinter as tk
 import tkintermapview
+from PIL import Image, ImageTk
+import os
+
 
 # Define the Drone class
 class Drone:
@@ -8,18 +11,40 @@ class Drone:
         self.x_long = x_long
         self.y_lat = y_lat
 
+    def place_on_map(self, map_widget, plane_image):
+        # Create a marker for the drone with its ID as text
+        map_widget.set_marker(self.x_long, self.y_lat, icon=plane_image, text=str(self.id))
 
 
 # Initialize variables to store the selected location's longitude and latitude
-target_longitude = 52.3946656
-target_latitude = 16.9206653
-drone_area_size=200
-drone_area_overlap=40
+target_longitude = 52.516268
+target_latitude = 13.377695
+drone_area_size = 200
+drone_area_overlap = 40
 # Initialize the list of drones
 drones = []
 
+# Global variable to store the current target marker
+current_target_marker = None
+
+
+def set_target_marker():
+    global current_target_marker
+    global map_widget
+
+    # Remove the existing marker, if any
+    if current_target_marker is not None:
+        map_widget.delete_all_marker()
+
+    # Create a marker with the target image
+    current_target_marker = map_widget.set_marker(target_longitude, target_latitude, icon=target_image)
+
+
 def calculate_clicked():
-    print("Calculate clicked")
+    if drones:
+        first_drone = drones[0]
+        first_drone.place_on_map(map_widget, plane_image)
+
 
 def set_target(coords):
     global target_latitude
@@ -28,6 +53,7 @@ def set_target(coords):
     target_longitude = coords[0]
     update_target()
 
+
 def update_target():
     entry_target_x = display_controls_frame.nametowidget("target_x")
     entry_target_x.delete(0, tk.END)  # Clear the current value
@@ -35,6 +61,8 @@ def update_target():
     entry_target_y = display_controls_frame.nametowidget("target_y")
     entry_target_y.delete(0, tk.END)  # Clear the current value
     entry_target_y.insert(0, str(target_longitude))  # Insert the new value
+    set_target_marker()
+
 
 # Functions for updating the drone list in the Listbox
 def update_drone_list():
@@ -51,6 +79,7 @@ def plus_clicked():
     drones.append(new_drone)
     print(f"Added Drone {new_drone_id}")
     update_drone_list()
+
 
 def minus_clicked():
     global drones
@@ -69,10 +98,16 @@ def minus_clicked():
 map_widget_width = 1000
 map_widget_height = 900
 
-
 # Create the main window
 root = tk.Tk()
 root.title("Drone Control Network")
+
+# Get the current path of the script and the plane and target images
+current_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
+plane_image_path = os.path.join(current_path, "images", "plane.png")
+target_image_path = os.path.join(current_path, "images", "target.png")
+target_image = ImageTk.PhotoImage(Image.open(target_image_path).resize((40, 40)))
+plane_image = ImageTk.PhotoImage(Image.open(plane_image_path).resize((40, 40)))
 
 # Create a frame that takes up the whole window
 full_frame = tk.Frame(root, bg='lightgrey')
@@ -138,7 +173,6 @@ for label_text, entry_name in controls:
         entry.grid(row=0, column=column, padx=5, pady=5)
         column += 1
 
-
 # Create the map_frame which will take the remaining space in pride_display
 map_frame = tk.Frame(pride_display, bg='grey')
 map_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
@@ -146,6 +180,9 @@ map_frame.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
 # Create map widget
 map_widget = tkintermapview.TkinterMapView(map_frame, width=map_widget_width, height=map_widget_height, corner_radius=0)
 map_widget.pack()
+
+set_target_marker()
+
 map_widget.add_right_click_menu_command(label="Set Target",
                                         command=set_target,
                                         pass_coords=True)
@@ -160,4 +197,3 @@ update_target()  # Call this function to initialize the value
 
 # Run the application
 root.mainloop()
-
