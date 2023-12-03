@@ -80,11 +80,16 @@ import math
 def calculate_clicked():
     map_widget.delete_all_polygon()
     map_widget.delete_all_marker()
+    set_target_marker()
     global drones
     global drone_area_size
     num_drones = len(drones)
     if num_drones == 0:
         return  # No drones to place
+
+    # Retrieve drone area size and overlap from the textboxes
+    drone_area_size = float(display_controls_frame.nametowidget("drone_size").get())
+    drone_area_overlap = float(display_controls_frame.nametowidget("drone_overlap").get())
 
     # Constants for converting meters to degrees
     meters_in_latitude_degree = 111320  # Approximately true for all latitudes
@@ -92,11 +97,11 @@ def calculate_clicked():
 
     # Adjust the longitude degree size based on latitude
     meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(target_latitude_y))
-    drone_area_size = float(display_controls_frame.nametowidget("drone_size").get())
 
-    # Calculate the degree size for each drone area
-    drone_lat_deg = drone_area_size / meters_in_latitude_degree
-    drone_long_deg = drone_area_size / meters_in_longitude_degree
+    # Calculate the effective size for each drone area considering the overlap
+    effective_drone_size = drone_area_size - drone_area_overlap
+    drone_lat_deg = effective_drone_size / meters_in_latitude_degree
+    drone_long_deg = effective_drone_size / meters_in_longitude_degree
 
     # Calculate the number of drones per row (and column)
     drones_per_row = math.ceil(math.sqrt(num_drones))
@@ -105,8 +110,6 @@ def calculate_clicked():
     # Calculate the top-left start position for the grid
     start_lat = target_latitude_y + (drone_lat_deg * (drones_per_column - 1)) / 2
     start_long = target_longitude_x - (drone_long_deg * (drones_per_row - 1)) / 2
-    target_latitude_y
-    target_longitude_x
 
     # Assign positions to each drone
     for i, drone in enumerate(drones):
@@ -120,6 +123,7 @@ def calculate_clicked():
 
         # Place the drone on the map
         drone.place_on_map(map_widget, plane_image)
+
 
 
 
