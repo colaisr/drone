@@ -98,10 +98,13 @@ def calculate_clicked():
 
     # Calculate the number of drones per row (and column)
     drones_per_row = math.ceil(math.sqrt(num_drones))
+    drones_per_column = math.ceil(num_drones/drones_per_row)
 
     # Calculate the top-left start position for the grid
-    start_lat = target_latitude_y + (drone_lat_deg * (drones_per_row - 1)) / 2
+    start_lat = target_latitude_y + (drone_lat_deg * (drones_per_column - 1)) / 2
     start_long = target_longitude_x - (drone_long_deg * (drones_per_row - 1)) / 2
+    target_latitude_y
+    target_longitude_x
 
     # Assign positions to each drone
     for i, drone in enumerate(drones):
