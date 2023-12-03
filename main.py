@@ -124,14 +124,6 @@ def calculate_clicked():
         # Place the drone on the map
         drone.place_on_map(map_widget, plane_image)
 
-
-
-
-
-
-
-
-
 def set_target(coords):
     global target_latitude_y
     global target_longitude_x
