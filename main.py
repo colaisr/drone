@@ -196,7 +196,7 @@ current_path = os.path.join(os.path.dirname(os.path.abspath(__file__)))
 plane_image_path = os.path.join(current_path, "images", "plane.png")
 target_image_path = os.path.join(current_path, "images", "target.png")
 target_image = ImageTk.PhotoImage(Image.open(target_image_path).resize((40, 40)))
-plane_image = ImageTk.PhotoImage(Image.open(plane_image_path).resize((40, 40)))
+plane_image = ImageTk.PhotoImage(Image.open(plane_image_path).resize((20, 20)))
 
 # Create a frame that takes up the whole window
 full_frame = tk.Frame(root, bg='lightgrey')
