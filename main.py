@@ -12,7 +12,9 @@ class Drone:
         self.x_long = x_long
         self.y_lat = y_lat
 
-    def place_on_map(self, map_widget, plane_image, area_size):
+    def place_on_map(self, map_widget, plane_image):
+
+        area_size=drone_area_size
         # Create a marker for the drone with its ID as text
         marker = map_widget.set_marker(self.x_long, self.y_lat, icon=plane_image, text=str(self.id))
 
@@ -24,7 +26,7 @@ class Drone:
         meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(self.y_lat))
 
         # Calculate half the size of the square in degrees
-        half_square_size_lat = (area_size ) / meters_in_latitude_degree
+        half_square_size_lat = (area_size / 2) / meters_in_latitude_degree
         half_square_size_long = (area_size / 2) / meters_in_longitude_degree
 
         # Calculate corner coordinates of the square
@@ -63,14 +65,15 @@ def set_target_marker():
     current_target_marker = map_widget.set_marker(target_longitude, target_latitude, icon=target_image)
 
 
+import math
+
 def calculate_clicked():
+    map_widget.delete_all_polygon()
+    map_widget.delete_all_marker()
     global drones
     num_drones = len(drones)
     if num_drones == 0:
         return  # No drones to place
-
-    # Calculate the number of drones per row (and column)
-    drones_per_row = math.ceil(math.sqrt(num_drones))
 
     # Constants for converting meters to degrees
     meters_in_latitude_degree = 111320  # Approximately true for all latitudes
@@ -83,19 +86,30 @@ def calculate_clicked():
     drone_lat_deg = drone_area_size / meters_in_latitude_degree
     drone_long_deg = drone_area_size / meters_in_longitude_degree
 
+    # Calculate the number of drones per row (and column)
+    drones_per_row = math.ceil(math.sqrt(num_drones))
+
     # Calculate the top-left start position for the grid
-    start_lat = target_latitude + (drone_lat_deg * drones_per_row) / 2
-    start_long = target_longitude - (drone_long_deg * drones_per_row) / 2
+    start_lat = target_latitude + (drone_lat_deg * (drones_per_row - 1)) / 2
+    start_long = target_longitude - (drone_long_deg * (drones_per_row - 1)) / 2
 
     # Assign positions to each drone
     for i, drone in enumerate(drones):
+        # Calculate row and column for the current drone
         row = i // drones_per_row
         col = i % drones_per_row
+
+        # Calculate the longitude and latitude for the drone
         drone.x_long = start_long + col * drone_long_deg
         drone.y_lat = start_lat - row * drone_lat_deg
 
         # Place the drone on the map
-        drone.place_on_map(map_widget, plane_image,drone_area_size)
+        drone.place_on_map(map_widget, plane_image)
+
+
+
+
+
 
 
 
@@ -146,8 +160,13 @@ def minus_clicked():
     if selection:
         selected_index = selection[0]
         if 0 <= selected_index < len(drones):
+            # Remove the marker of the selected drone
+            selected_drone = drones[selected_index]
+            # Remove the drone from the list
             del drones[selected_index]
             print(f"Removed Drone at index {selected_index}")
+
+            # Update the drone list in the UI
             update_drone_list()
     else:
         print("No drone selected")
