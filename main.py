@@ -81,6 +81,7 @@ def calculate_clicked():
     map_widget.delete_all_polygon()
     map_widget.delete_all_marker()
     global drones
+    global drone_area_size
     num_drones = len(drones)
     if num_drones == 0:
         return  # No drones to place
@@ -91,6 +92,7 @@ def calculate_clicked():
 
     # Adjust the longitude degree size based on latitude
     meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(target_latitude_y))
+    drone_area_size = float(display_controls_frame.nametowidget("drone_size").get())
 
     # Calculate the degree size for each drone area
     drone_lat_deg = drone_area_size / meters_in_latitude_degree
