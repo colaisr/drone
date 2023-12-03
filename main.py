@@ -16,7 +16,7 @@ class Drone:
 
         area_size=drone_area_size
         # Create a marker for the drone with its ID as text
-        marker = map_widget.set_marker(self.x_long, self.y_lat, icon=plane_image, text=str(self.id))
+        marker = map_widget.set_marker(self.y_lat, self.x_long, icon=plane_image, text=str(self.id), text_color="red")
 
         # Constants for converting meters to degrees
         meters_in_latitude_degree = 111320  # Approximately true for all latitudes
@@ -29,21 +29,31 @@ class Drone:
         half_square_size_lat = (area_size / 2) / meters_in_latitude_degree
         half_square_size_long = (area_size / 2) / meters_in_longitude_degree
 
+        top_left_x=self.x_long - half_square_size_long
+        top_left_y=self.y_lat + half_square_size_lat
+        top_right_x=self.x_long + half_square_size_long
+        top_right_y=self.y_lat + half_square_size_lat
+        bottom_left_x=self.x_long - half_square_size_long
+        bottom_left_y=self.y_lat - half_square_size_lat
+        bottom_right_x=self.x_long + half_square_size_long
+        bottom_right_y=self.y_lat - half_square_size_lat
+
+
         # Calculate corner coordinates of the square
-        top_left = (self.x_long - half_square_size_long, self.y_lat + half_square_size_lat)
-        top_right = (self.x_long + half_square_size_long, self.y_lat + half_square_size_lat)
-        bottom_left = (self.x_long - half_square_size_long, self.y_lat - half_square_size_lat)
-        bottom_right = (self.x_long + half_square_size_long, self.y_lat - half_square_size_lat)
+        top_left = (top_left_y,top_left_x )
+        top_right = ( top_right_y,top_right_x)
+        bottom_left = (bottom_left_y, bottom_left_x)
+        bottom_right = (bottom_right_y, bottom_right_x)
 
         # Define the polygon points (corners of the square)
-        polygon_points = [top_left, top_right, bottom_right, bottom_left, top_left]
+        polygon_points = [top_left, top_right,bottom_right,bottom_left]
 
         # Draw the polygon on the map
         map_widget.set_polygon(polygon_points, fill_color=None, outline_color="red", border_width=2)
 
 # Initialize variables to store the selected location's longitude and latitude
-target_longitude = 52.516268
-target_latitude = 13.377695
+target_longitude_x = 13.377695
+target_latitude_y =  52.516268
 drone_area_size = 200
 drone_area_overlap = 40
 # Initialize the list of drones
@@ -62,7 +72,7 @@ def set_target_marker():
         map_widget.delete_all_marker()
 
     # Create a marker with the target image
-    current_target_marker = map_widget.set_marker(target_longitude, target_latitude, icon=target_image)
+    current_target_marker = map_widget.set_marker(target_latitude_y, target_longitude_x, icon=target_image)
 
 
 import math
@@ -80,7 +90,7 @@ def calculate_clicked():
     meters_in_longitude_degree_at_equator = 111320  # Approximately true at the equator
 
     # Adjust the longitude degree size based on latitude
-    meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(target_latitude))
+    meters_in_longitude_degree = meters_in_longitude_degree_at_equator * math.cos(math.radians(target_latitude_y))
 
     # Calculate the degree size for each drone area
     drone_lat_deg = drone_area_size / meters_in_latitude_degree
@@ -90,8 +100,8 @@ def calculate_clicked():
     drones_per_row = math.ceil(math.sqrt(num_drones))
 
     # Calculate the top-left start position for the grid
-    start_lat = target_latitude + (drone_lat_deg * (drones_per_row - 1)) / 2
-    start_long = target_longitude - (drone_long_deg * (drones_per_row - 1)) / 2
+    start_lat = target_latitude_y + (drone_lat_deg * (drones_per_row - 1)) / 2
+    start_long = target_longitude_x - (drone_long_deg * (drones_per_row - 1)) / 2
 
     # Assign positions to each drone
     for i, drone in enumerate(drones):
@@ -114,20 +124,20 @@ def calculate_clicked():
 
 
 def set_target(coords):
-    global target_latitude
-    global target_longitude
-    target_latitude = coords[1]
-    target_longitude = coords[0]
+    global target_latitude_y
+    global target_longitude_x
+    target_latitude_y = coords[0]
+    target_longitude_x = coords[1]
     update_target()
 
 
 def update_target():
     entry_target_x = display_controls_frame.nametowidget("target_x")
     entry_target_x.delete(0, tk.END)  # Clear the current value
-    entry_target_x.insert(0, str(target_latitude))  # Insert the new value
+    entry_target_x.insert(0, str(target_longitude_x))  # Insert the new value
     entry_target_y = display_controls_frame.nametowidget("target_y")
     entry_target_y.delete(0, tk.END)  # Clear the current value
-    entry_target_y.insert(0, str(target_longitude))  # Insert the new value
+    entry_target_y.insert(0, str(target_latitude_y))  # Insert the new value
     set_target_marker()
     entry_target_size = display_controls_frame.nametowidget("drone_size")
     entry_target_size.delete(0, tk.END)  # Clear the current value
@@ -148,7 +158,7 @@ def update_drone_list():
 def plus_clicked():
     global drones
     new_drone_id = len(drones) + 1
-    new_drone = Drone(new_drone_id, target_longitude, target_latitude)
+    new_drone = Drone(new_drone_id, target_longitude_x, target_latitude_y)
     drones.append(new_drone)
     print(f"Added Drone {new_drone_id}")
     update_drone_list()
